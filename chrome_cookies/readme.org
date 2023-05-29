@@ -91,7 +91,6 @@ header("Set-Cookie: $codepoint=something;
 #+end_src
 closely followed by JS, just can't use inline scripts but have to load it from an external
 source or use ~unescape()~ in combination with a value that looks like ~%ud800~.
-#+begin_
 * Setup
 I used podman (alternative to Docker) to host various backends and observe how they handle the cookie.
 
