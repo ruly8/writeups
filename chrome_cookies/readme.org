@@ -1,0 +1,40 @@
+* Intro
+Reading this blog post ( https://blog.ankursundara.com/cookie-bugs/ ) I learned
+about a value you can use as cookie name that partially corrupts ~document.cookie~.
+There are plenty of other interesting topics in the blog post, highly recommend reading.
+
+Basically if the cookie is set it is no longer possible to use ~document.cookie~ to read
+cookies as it will always return an empty string. It is still possible to edit cookies given
+we know their name and can access them that way. Also note that you cannot use DevTools
+to delete or edit the cookie.
+
+#+begin_src javascript
+  document.cookie = "a=b";
+  document.cookie;
+  'a=b'
+  document.cookie = "\ud800=x";
+  document.cookie;
+  ''
+  document.cookie = "\ud800=;max-age=0";
+  document.cookie;
+  'a=b'
+#+end_src
+
+Here is a short video that tries to give an overview of what this looks like.
+YOUTUBE UPLOAD
+
+Disclaimer:
+#+begin_quote
+If you can access cookies other than for yourself, that's most likely already bad
+so what I'm looking at here is how different technologies react to these kinds of cookies.
+At this time I don't think there is any new unexpected behaviour to be observed and I just
+used this opportunity to explore different frameworks that were new to me.
+#+end_quote
+
+* Setup
+I used podman (alternative to Docker) to host various backends and observe how they handle the cookie.
+
+** Dockerfile Skeleton
+#+begin_src
+
+#+end_src
