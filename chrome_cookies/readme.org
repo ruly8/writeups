@@ -34,6 +34,12 @@ Code is quite ugly, don't judge.
 Most tests have been performed with ~Chromium Version 112.0.5615.165~ but work on all recent
 verions of Chrome and Browsers that use it as base. Firefox handles the cookie properly
 and so far I was not able to test Safari.
+List of tested browsers:
+- Chromium Version 112.0.5615.165
+- Chrome Version 113.0.5672.127
+- Edge Version 113.0.1774.42
+- Brave Version 1.51.114
+- Opera 99.0.4788.9
 
 * Which values show a similar behaviour?
 Basically all Unicode Surrogate characters show the same behaviour. Here's the code I used to
