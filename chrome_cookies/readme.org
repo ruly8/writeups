@@ -21,7 +21,7 @@ to delete or edit the cookie.
 #+end_src
 
 Here is a short video that tries to give an overview of what this looks like.
-[[file:assets/chrome_cookie-2023-05-29_15.03.37.mp4]]
+https://www.youtube.com/watch?v=n542mnt9lj8
 
 *Disclaimer:*
 #+begin_quote
