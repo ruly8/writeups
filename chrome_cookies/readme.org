@@ -78,6 +78,20 @@ altough it does so with an empty name.
 
 [[file:assets/cookieStore_2023-05-29_15-56.png]]
 
+* Setting the cookie as server
+Setting the cookie as server seems to be mainly a battle against the specific language.
+It needs to allow using one half of a surrogate pair and the value can not to get interpreted
+before being set to prevent using the placeholder symbol cookie name.
+PHP is probably the most straight forward
+#+begin_src php
+<?php
+$codepoint = "\u{d800}";
+header("Set-Cookie: $codepoint=something;
+?>
+#+end_src
+closely followed by JS, just can't use inline scripts but have to load it from an external
+source or use ~unescape()~ in combination with a value that looks like ~%ud800~.
+#+begin_
 * Setup
 I used podman (alternative to Docker) to host various backends and observe how they handle the cookie.
 
@@ -108,7 +122,6 @@ in fixing this by declaring an encoding.
 
 ** TODO Laravel/Symfony
 As far as I know both are popular frameworks and provide functionality to work with cookies.
-
 
 * Node/Express JS
 ~cookie-parser~ seems to be the go-to way of working with cookies in nodeJS, using it to print
