@@ -9,32 +9,125 @@ we know their name and can access them that way. Also note that you cannot use D
 to delete or edit the cookie.
 
 #+begin_src javascript
-  document.cookie = "a=b";
-  document.cookie;
-  'a=b'
-  document.cookie = "\ud800=x";
-  document.cookie;
-  ''
-  document.cookie = "\ud800=;max-age=0";
-  document.cookie;
-  'a=b'
+  > document.cookie = "a=b";
+  > document.cookie;
+  < 'a=b'
+  > document.cookie = "\ud800=x";
+  > document.cookie;
+  < ''
+  > document.cookie = "\ud800=;max-age=0";
+  > document.cookie;
+  < 'a=b'
 #+end_src
 
 Here is a short video that tries to give an overview of what this looks like.
 YOUTUBE UPLOAD
 
-Disclaimer:
+*Disclaimer:*
 #+begin_quote
-If you can access cookies other than for yourself, that's most likely already bad
-so what I'm looking at here is how different technologies react to these kinds of cookies.
+What I'm looking at here is how different technologies react to these kinds of cookies.
 At this time I don't think there is any new unexpected behaviour to be observed and I just
 used this opportunity to explore different frameworks that were new to me.
+Code is quite ugly, don't judge.
 #+end_quote
+
+Most tests have been performed with ~Chromium Version 112.0.5615.165~ but work on all recent
+verions of Chrome and Browsers that use it as base. Firefox handles the cookie properly
+and so far I was not able to test Safari.
+
+* Which values show a similar behaviour?
+Basically all Unicode Surrogate characters show the same behaviour. Here's the code I used to
+identify them.
+
+#+begin_src javascript
+  for (let i = 0; i <= 0x10ffff; i++) {
+      document.cookie = `${String.fromCodePoint(i)}=${i}`;
+      let c = await cookieStore.getAll();
+      amount_cookies = c.length;
+      if (document.cookie == "") {
+          //console.log(i + ": empty document.cookie string");
+          if (amount_cookies > 0) {
+              console.log(i + ": document.cookie empty but cookieStore not");
+              document.cookie = `${String.fromCodePoint(i)}=${i};max-age=0`
+              continue;
+          }
+      }
+      document.cookie = `${String.fromCodePoint(i)}=${i};max-age=0`
+  }
+#+end_src
+
+The same code can be ran with ~fromCharCode()~ instead of ~fromCodePoint()~ but as far as I can tell
+this results in the same values but alot of duplicates that can be explained by this:
+#+begin_src javascript
+  > String.fromCharCode(0xd800) == String.fromCharCode(0xffd800);
+  < true
+#+end_src
+
+This results in the following log files
+[[file:example.com-1684776208717__fromCodePoint.log]]
+[[file:example.com-1684771099249__fromCharCode.log]]
+
+I used the fact that ~cookieStore~ still shows the cookies even when ~document.cookie~ is corrupted
+altough it does so with an empty name.
+
+[[file:assets/cookieStore_2023-05-29_15-56.png]]
 
 * Setup
 I used podman (alternative to Docker) to host various backends and observe how they handle the cookie.
 
-** Dockerfile Skeleton
+*** Dockerfile Skeleton
 #+begin_src
-
+FROM php:latest
+WORKDIR /usr/src/php_cookies
+COPY . .
+EXPOSE 9090
+CMD ["php", "-S", "0.0.0.0:9090"]
 #+end_src
+
+*** Commands to build and run
+#+begin_src bash
+  podman build -t php_cookies .
+  podman run -t -p 9090:9090 php_cookies
+  podman kill -l
+#+end_src
+* PHP
+** Pure
+PHP's ~$_COOKIE~ shows 3 placeholder symbols for the provided value.
+[[file:assets/php_base_2023-05-29_20-23.png]]
+
+Using ~mb_ord()~ instead with encoding UTF-16 the returned value is ~int(60832)~.
+
+I would assume this is due to the way PHP interprets UTF-16 values though I was not successful
+in fixing this by declaring an encoding.
+
+** TODO Laravel/Symfony
+As far as I know both are popular frameworks and provide functionality to work with cookies.
+
+
+* Node/Express JS
+~cookie-parser~ seems to be the go-to way of working with cookies in nodeJS, using it to print
+the value of the cookie we get the same values we saw in the pure PHP example.
+#+begin_src javascript
+{ 'í \x80': 'asd' }
+#+end_src
+[[file:assets/nodejs_cookie-parser_2023-05-29_22-34.png]]
+
+* Go
+Go's built-in ~Cookies()~ function (~net/http~) simply ignores the cookie in question but still
+reliably returns other cookies.
+Accessing the Cookie Header of the request directly results in the same 3 values we saw before.
+#+begin_src
+Cookie Header: [�=800]
+Header Code Point: "\xed\xa0\x80"
+#+end_src
+
+** TODO Frameworks
+Are there popular Go frameworks that are used when parsing cookies?
+
+* TODO Non-Application Server
+Do servers like Nginx/Apache regularly handle cookies and how do they react? 
+
+* TODO Cookie Crawler/Blocker
+Until I was asked how these react to the /weird/ cookie I was not aware they exist.
+I didn't have the time to look into them as of now but more systems to throw cookies against
+fits the theme.
