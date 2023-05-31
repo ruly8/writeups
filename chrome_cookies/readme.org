@@ -145,7 +145,23 @@ Are there popular Go frameworks that are used when parsing cookies?
 * TODO Non-Application Server
 Do servers like Nginx/Apache regularly handle cookies and how do they react? 
 
-* TODO Cookie Crawler/Blocker
+* TODO Cookie Crawler/Blocker/Extensions
 Until I was asked how these react to the /weird/ cookie I was not aware they exist.
 I didn't have the time to look into them as of now but more systems to throw cookies against
 fits the theme.
+** Cookie-Editor Extension
+https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm
+
+Using the chrome extension *Cookie-Editor* (version 1.11.0) I was not able to delete
+the cookie individually or via the ~Delete All~ button.
+[[file:assets/cookie-editor_2023-05-31_02-58.png]]
+
+** Cookie AutoDelete Extension
+https://chrome.google.com/webstore/detail/cookie-autodelete/fhcgjolkccmbidfldomjliifgaodjagh
+
+Cookie AutoDelete (version 3.8.2) was not able to /clean/ the cookie with any of its
+functions provided by various buttons. In addition when /Auto-clean/ is enabled the cookie
+is not deleted either.
+[[file:assets/cookie-autodelete-01_2023-05-31_03-09.png]]
+[[file:assets/cookie-autodelete-02_2023-05-31_03-11.png]]
+[[file:assets/cookie-autodelete-03_2023-05-31_03-18.png]]
