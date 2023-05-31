@@ -154,6 +154,7 @@ https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfd
 
 Using the chrome extension *Cookie-Editor* (version 1.11.0) I was not able to delete
 the cookie individually or via the ~Delete All~ button.
+
 [[file:assets/cookie-editor_2023-05-31_02-58.png]]
 
 ** Cookie AutoDelete Extension
@@ -162,6 +163,7 @@ https://chrome.google.com/webstore/detail/cookie-autodelete/fhcgjolkccmbidfldomj
 Cookie AutoDelete (version 3.8.2) was not able to /clean/ the cookie with any of its
 functions provided by various buttons. In addition when /Auto-clean/ is enabled the cookie
 is not deleted either.
+
 [[file:assets/cookie-autodelete-01_2023-05-31_03-09.png]]
 [[file:assets/cookie-autodelete-02_2023-05-31_03-11.png]]
 [[file:assets/cookie-autodelete-03_2023-05-31_03-18.png]]
