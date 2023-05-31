@@ -6,7 +6,8 @@ There are plenty of other interesting topics in the blog post, highly recommend 
 Basically if the cookie is set it is no longer possible to use ~document.cookie~ to read
 cookies as it will always return an empty string. It is still possible to edit cookies given
 we know their name and can access them that way. Also note that you cannot use DevTools
-to delete or edit the cookie.
+to delete or edit the cookie but using the browsers built-in options to /Clear browsing data/
+either by site or all is able to delete it.
 
 #+begin_src javascript
   > document.cookie = "a=b";
